@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLDER_STATION_TELEMETRY</title>
+    <style>
+        :root {
+            --bg: #0f111a;
+            --fg: #d1d5db;
+            --accent: #10b981;
+            --warn: #f59e0b;
+            --err: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 2rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #334155;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: bottom;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .card {
+            border-left: 3px solid #334155;
+            padding-left: 1rem;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .unit {
+            font-size: 1rem;
+            color: #64748b;
+        }
+
+        .status-badge {
+            background: #1e293b;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 0.7rem;
+            color: #475569;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>SYS.T12_REMOTE_MONITOR : <span id="time">--:--:--</span></h1>
+            <div class="status-badge" id="conn">DISCONNECTED</div>
+        </header>
+
+        <div class="grid">
+            <div class="card" style="border-left-color: var(--accent);">
+                <div class="label">LM358 Tip Temperature</div>
+                <div class="value"><span id="tip">--.-</span><span class="unit">°C</span></div>
+            </div>
+            <div class="card" style="border-left-color: var(--info);">
+                <div class="label">DS18B20 Ambient (RT)</div>
+                <div class="value"><span id="ambient">--.-</span><span class="unit">°C</span></div>
+            </div>
+            <div class="card" style="border-left-color: var(--warn);">
+                <div class="label">Input Voltage (Divider)</div>
+                <div class="value"><span id="voltage">--.-</span><span class="unit">V</span></div>
+            </div>
+            <div class="card">
+                <div class="label">Power Consumption</div>
+                <div class="value"><span id="power">--.-</span><span class="unit">W</span></div>
+            </div>
+        </div>
+
+        <div
+            style="margin-top: 2rem; border-top: 1px dashed #334155; padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div class="label">System State</div>
+                <div class="value" id="status" style="font-size: 1.2rem; color: var(--warn);">--</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="label">PWM Duty</div>
+                <div class="value" style="font-size: 1.2rem;"><span id="pwm-val">0</span><span class="unit">/255</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 1990-2025 SENIOR_GABUT_WORKS // PROJECT_T12_ESP32
+        </footer>
+    </div>
+
+    <script>
+        async function update() {
+            try {
+                const res = await fetch('/api/data');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('tip').innerText = data.tip.toFixed(1);
+                    document.getElementById('ambient').innerText = data.ambient.toFixed(1);
+                    document.getElementById('voltage').innerText = data.voltage.toFixed(2);
+                    document.getElementById('power').innerText = data.power.toFixed(1);
+                    document.getElementById('status').innerText = data.status;
+                    document.getElementById('pwm-val').innerText = data.pwm;
+
+                    const conn = document.getElementById('conn');
+                    conn.innerText = 'ONLINE';
+                    conn.style.color = 'var(--accent)';
+                }
+            } catch (e) {
+                document.getElementById('conn').innerText = 'ERROR';
+                document.getElementById('conn').style.color = 'var(--err)';
+            }
+            document.getElementById('time').innerText = new Date().toLocaleTimeString();
+        }
+        setInterval(update, 1000);
+    </script>
+
+</body>
+
+</html>

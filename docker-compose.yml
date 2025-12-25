@@ -1,0 +1,7 @@
+services:
+  t12-monitor:
+    build: ./server
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    container_name: t12_solder_monitor
